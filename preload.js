@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('navroNative', {
   readAutosave: () => ipcRenderer.invoke('read-autosave'),
   clearAutosave: () => ipcRenderer.invoke('clear-autosave'),
   onCloseRequest: cb => ipcRenderer.on('close-request', () => cb()),
+  machineCode: () => ipcRenderer.invoke('machine-code'),
   confirmClose: () => ipcRenderer.send('close-ok'),
   pathOf: file => { try { return webUtils.getPathForFile(file) || null; } catch (e) { return null; } }
 });

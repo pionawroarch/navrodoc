@@ -2,6 +2,20 @@
 const { app, BrowserWindow, dialog, shell, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+const crypto = require('crypto');
+const { execSync } = require('child_process');
+
+// kod komputera do licencji: identyfikator instalacji Windows (MachineGuid), w razie braku – dane sprzętu
+function machineCode() {
+  let src = '';
+  try { const out = execSync('reg query HKLM\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid', { encoding: 'utf8', windowsHide: true }); const m = out.match(/MachineGuid\s+REG_SZ\s+(\S+)/); if (m) src = m[1]; } catch (e) {}
+  if (!src) src = [os.hostname(), (os.cpus()[0] || {}).model, os.totalmem(), os.platform()].join('|');
+  const h = crypto.createHash('sha256').update('navro-dok|' + src.toLowerCase()).digest().subarray(0, 10);
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; let bits = 0, v = 0, o = '';
+  for (const x of h) { v = (v << 8) | x; bits += 8; while (bits >= 5) { o += A[(v >>> (bits - 5)) & 31]; bits -= 5; } }
+  return o.match(/.{1,4}/g).join('-');
+}
 
 app.setName('navro. dokumentacja');
 if (process.platform === 'win32') app.setAppUserModelId('eu.navro.dokumentacja');
@@ -52,6 +66,7 @@ else {
     });
   });
   app.on('window-all-closed', () => app.quit());
+  ipcMain.handle('machine-code', () => machineCode());
 
   // ---- zapis projektu: kopia zapasowa poprzedniej wersji obok dokumentu ----
   ipcMain.handle('save-project', async (e, { data, path: p, name }) => {

@@ -24,4 +24,9 @@ Program do dokumentacji projektów wnętrz (w stylu SketchUp Layout) – wczytuj
 
 **Lokalnie:** zainstaluj Node.js LTS i uruchom `zbuduj.bat`. Wynik w folderze `dist`.
 
+## Licencja
+
+Program wymaga aktywacji kluczem licencji przypisanym do komputera. Klucze wystawia NAVRO. Szczegóły w pliku `LICENSE`.
+Oprogramowanie zastrzeżone – wszelkie prawa zastrzeżone.
+
 © NAVRO. – Studio Projektowe mgr inż. arch. Piotr Nawrocki

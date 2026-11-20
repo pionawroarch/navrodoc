@@ -1,7 +1,7 @@
 {
   "name": "navro-dokumentacja",
   "productName": "navro. dokumentacja",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "navro. dokumentacja – arkusze dokumentacji ze scen SketchUpa",
   "author": "NAVRO. – Studio Projektowe mgr inż. arch. Piotr Nawrocki",
   "main": "main.js",
@@ -18,7 +18,7 @@
     "productName": "navro. dokumentacja",
     "copyright": "© NAVRO. Studio Projektowe",
     "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["main.js", "preload.js", "app/**/*", "build/icon.png"],
+    "files": ["main.js", "preload.js", "app/**/*", "build/icon.png", "LICENSE"],
     "win": {
       "icon": "build/icon.ico",
       "target": ["nsis", "portable"],
@@ -30,7 +30,8 @@
       "shortcutName": "navro. dokumentacja",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "createDesktopShortcut": true
+      "createDesktopShortcut": true,
+      "license": "build/licencja.txt"
     },
     "portable": { "artifactName": "navro-dokumentacja-${version}-portable.exe" },
     "fileAssociations": [
