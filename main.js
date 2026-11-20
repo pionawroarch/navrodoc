@@ -1,5 +1,5 @@
 // navro. dokumentacja – okno aplikacji (Electron)
-const { app, BrowserWindow, dialog, shell, Menu } = require('electron');
+const { app, BrowserWindow, dialog, shell, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -15,7 +15,8 @@ function openFile(p) {
   if (!win || win.webContents.isLoading()) { pending.push(p); return; }
   const txt = fs.readFileSync(p, 'utf8'), name = path.basename(p);
   const fn = /\.ndok$/i.test(p) ? 'loadNdok' : /\.navrokor$/i.test(p) ? 'importMarks' : 'loadProject';
-  win.webContents.executeJavaScript(`${fn}(${JSON.stringify(txt)},${JSON.stringify(name)})`).catch(() => {});
+  const setPath = fn === 'loadProject' ? `;S.filePath=${JSON.stringify(p)};` : '';
+  win.webContents.executeJavaScript(`askUnsaved(()=>{${fn}(${JSON.stringify(txt)},${JSON.stringify(name)})${setPath}})`).catch(() => {});
   if (win.isMinimized()) win.restore();
   win.focus();
 }
@@ -31,18 +32,18 @@ else {
       title: 'navro. dokumentacja', backgroundColor: '#141414',
       icon: path.join(__dirname, 'build', 'icon.png'),
       autoHideMenuBar: true, show: false,
-      webPreferences: { contextIsolation: true, spellcheck: false }
+      webPreferences: { contextIsolation: true, spellcheck: false, preload: path.join(__dirname, 'preload.js') }
     });
     win.once('ready-to-show', () => { win.maximize(); win.show(); });
     win.loadFile(path.join(__dirname, 'app', 'index.html'));
     win.webContents.on('did-finish-load', () => { const a = fileArg(process.argv); if (a) pending.push(a); pending.splice(0).forEach(openFile); });
 
-    // zamykanie z niezapisanymi zmianami – pytanie zamiast cichego blokowania okna
-    win.webContents.on('will-prevent-unload', e => {
-      const r = dialog.showMessageBoxSync(win, { type: 'question', buttons: ['Zamknij bez zapisywania', 'Anuluj'], defaultId: 1, cancelId: 1,
-        title: 'navro. dokumentacja', message: 'Projekt może mieć niezapisane zmiany.', detail: 'Czy na pewno zamknąć program?' });
-      if (r === 0) e.preventDefault();
-    });
+    // zamykanie: program pokazuje własne okno „Niezapisane zmiany” (Zapisz / Nie zapisuj / Anuluj)
+    let allowClose = false;
+    win.on('close', e => { if (allowClose) return; e.preventDefault(); win.webContents.send('close-request'); });
+    ipcMain.on('close-ok', () => { allowClose = true; win.close(); });
+    // gdyby strona przestała odpowiadać – zamknięcie i tak możliwe (autozapis zostaje do odzyskania)
+    win.webContents.on('unresponsive', () => { allowClose = true; });
     // linki zewnętrzne w domyślnej przeglądarce
     win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: url.startsWith('about:blank') ? 'allow' : 'deny' }; });
     // zapisywanie plików (eksport, projekt) – zawsze z oknem „Zapisz jako”
@@ -51,4 +52,27 @@ else {
     });
   });
   app.on('window-all-closed', () => app.quit());
+
+  // ---- zapis projektu: kopia zapasowa poprzedniej wersji obok dokumentu ----
+  ipcMain.handle('save-project', async (e, { data, path: p, name }) => {
+    if (!p) {
+      const r = await dialog.showSaveDialog(win, { title: 'Zapisz projekt', defaultPath: path.join(app.getPath('documents'), name || 'projekt.navrodok'),
+        filters: [{ name: 'Projekt navro. dokumentacja', extensions: ['navrodok'] }] });
+      if (r.canceled || !r.filePath) return null;
+      p = r.filePath;
+    }
+    let backup = null;
+    if (fs.existsSync(p)) {
+      backup = p.replace(/\.navrodok$/i, '') + ' – kopia zapasowa.navrodok';
+      try { fs.copyFileSync(p, backup); } catch (err) { backup = null; }
+    }
+    const tmp = p + '.zapis';
+    fs.writeFileSync(tmp, data, 'utf8'); fs.renameSync(tmp, p); // zapis przez plik tymczasowy – przerwany zapis nie psuje dokumentu
+    return { path: p, backup: backup ? path.basename(backup) : null };
+  });
+  // ---- autozapis (na wypadek awarii) w folderze danych programu ----
+  const autoFile = () => path.join(app.getPath('userData'), 'autozapis.json');
+  ipcMain.handle('autosave', (e, rec) => { const t = autoFile() + '.tmp'; fs.writeFileSync(t, rec, 'utf8'); fs.renameSync(t, autoFile()); return true; });
+  ipcMain.handle('read-autosave', () => { try { return fs.readFileSync(autoFile(), 'utf8'); } catch (err) { return null; } });
+  ipcMain.handle('clear-autosave', () => { try { fs.unlinkSync(autoFile()); } catch (err) {} return true; });
 }

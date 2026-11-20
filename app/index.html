@@ -204,6 +204,13 @@ svg.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke
 .swrow .sw{width:34px;height:28px}
 
 /* --- okna, menu, podpowiedzi --- */
+#cbox{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:60}
+#cbox .box{background:var(--panel);border:1px solid var(--line2);border-radius:14px;width:440px;padding:26px 26px 20px;box-shadow:0 24px 70px rgba(0,0,0,.65);text-align:left}
+#cbox .ci{width:44px;height:44px;border-radius:11px;background:#fff;color:#000;display:grid;place-items:center;margin-bottom:14px}
+#cbox .ci svg{width:24px;height:24px}
+#cbox .ct{font:600 17px Poppins,var(--ui);color:var(--t);margin-bottom:8px}
+#cbox .cx{font-size:13px;line-height:1.55;color:var(--t2);margin-bottom:20px}#cbox .cx b{color:var(--t);font-weight:600}
+#cbox .cf{display:flex;gap:8px;justify-content:flex-end}#cbox .cf .btn{min-width:96px;justify-content:center}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50}
 #modal .box{background:var(--panel);border:1px solid var(--line2);border-radius:12px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 #modal .mh{padding:14px 18px 0;font:600 15px Poppins,var(--ui)}
@@ -314,6 +321,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke
 
 <div id="modal"><div class="box"><div class="mh" id="mTitle"></div><div class="mb" id="mBody"></div>
   <div class="mf"><button class="btn ghost" id="mCancel">Anuluj</button><button class="btn pri" id="mOk">OK</button></div></div></div>
+<div id="cbox"><div class="box"><div class="ci"></div><div class="ct"></div><div class="cx"></div><div class="cf"></div></div></div>
 <div id="pop"></div>
 <div id="cpk"></div>
 <div id="ctx"></div>
@@ -369,7 +377,7 @@ Object.assign(IC,{
  pick:'<path d="M19.5 4.5a2.1 2.1 0 0 0-3 0l-2.3 2.3-1-1-1.4 1.4 1 1L5.5 15.5 4 20l4.5-1.5 7.3-7.3 1 1 1.4-1.4-1-1 2.3-2.3a2.1 2.1 0 0 0 0-3z"/>',
  mnote:'<path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V16.5H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M7.5 9h9M7.5 12h6"/>',
  mcloud:'<path d="M7 18a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17 8.3 4.6 4.6 0 0 1 17.5 18z"/>',
- mpen:'<path d="M4 19c3-1 4-4 7-4s3 3 6 2 2-5 3-7"/><path d="M15.5 3.5l3 3-7 7-3.5.5.5-3.5z" stroke-width="1.4"/>',
+ mpen:'<path d="M16.2 3.8a2.1 2.1 0 0 1 3 3L8.5 17.5 4 19l1.5-4.5z"/><path d="M14.5 5.5l3 3"/><path d="M13 20.5h7"/>',
  left:'<path d="M15 5l-7 7 7 7"/>',right:'<path d="M9 5l7 7-7 7"/>',
  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
  toc:'<rect x="4" y="4" width="4" height="4" fill="currentColor"/><rect x="4" y="10" width="4" height="4" fill="currentColor"/><rect x="4" y="16" width="4" height="4" fill="currentColor"/><path d="M10 6h10M10 12h10M10 18h10"/>',
@@ -1224,7 +1232,7 @@ function act(a){
   else if(a==='cal'){setTool('cal');calVp=it.id;return;}
   renderAll();push();
 }
-function renderAll(){syncToc();if($('paneK').style.display!=='none')renderMarks();renderScenes();renderSheets();renderTabs();renderRight();render();updateUndo();$('projName').textContent=S.model||'Nowy projekt';}
+function renderAll(){syncToc();if($('paneK').style.display!=='none')renderMarks();renderScenes();renderSheets();renderTabs();renderRight();render();updateUndo();titleSync();}
 
 /* ====================== NARZĘDZIA + PASEK OPCJI NAD NARZĘDZIEM ====================== */
 const TOOLS=['#GŁÓWNE',['sel','V','Zaznaczanie i przesuwanie'],['brush','I','Pipeta i nadawanie stylu (Alt+klik – pobierz nowy styl)'],['eraser','E','Gumka – kliknij lub przeciągnij po elementach'],'#DOKUM.',['dim','D','Wymiar'],['dimc','W','Wymiarowanie ciągiem'],['txt','T','Tekst'],['lead','L','Opis z odnośnikiem (etykieta)'],['cal','C','Kalibracja skali'],'#INSTAL.',['inst','G','Instalacje – symbole elektryczne i hydrauliczne (legenda dodaje się sama)'],'#RYSUNEK',['line','N','Linia'],['pl','P','Polilinia'],['fill','B','Wypełnienie / kształt (dowolny, prostokąt, okrąg)'],'#KOREKTY',['mnote','K','Korekta: komentarz (pinezka)'],['mcloud','O','Korekta: chmurka wokół obszaru'],['mpen','M','Korekta: pisak odręczny']];
@@ -1795,7 +1803,7 @@ document.addEventListener('contextmenu',e=>{const t=e.target.tagName;if(t!=='INP
 window.addEventListener('keydown',ev=>{
   const tg=ev.target.tagName,k=ev.key.toLowerCase(),ctrl=ev.ctrlKey||ev.metaKey;
   if(ctrl&&(k==='+'||k==='='||k==='-'||k==='0')){ev.preventDefault();if(k==='0'){fitView();render();}else zoomBy(k==='-'?1/1.2:1.2);return;}
-  if(ctrl&&k==='s'){ev.preventDefault();saveProject();return;}
+  if(ctrl&&k==='s'){ev.preventDefault();saveProject(ev.shiftKey);return;}
   if(ctrl&&k==='o'){ev.preventDefault();$('bOpenP').click();return;}
   if(ctrl&&k==='p'){ev.preventDefault();$('bPdf').click();return;}
   if(editing&&tg!=='INPUT'&&tg!=='TEXTAREA'&&tg!=='SELECT'){const ta=$('ted');ta.focus();
@@ -1845,7 +1853,7 @@ document.addEventListener('pointerdown',()=>{$('tip').style.display='none';});
 /* ====================== COFNIJ / PONÓW ====================== */
 let hist=[],hpos=-1;
 function snapshot(){return JSON.stringify({notes:S.notes,sheets:S.sheets,cur:S.cur,unit:S.unit,tb:S.tb,k:Object.fromEntries(Object.entries(S.scenes).map(([i,s])=>[i,[s.k,s.mmPerPx]]))});}
-function push(){const s=snapshot();if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>100)hist.shift();hpos=hist.length-1;updateUndo();}
+function push(){const s=snapshot();if(hist[hpos]===s)return;if(hist.length)markDirty();hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>100)hist.shift();hpos=hist.length-1;updateUndo();}
 function restore(str){const s=JSON.parse(str);S.sheets=s.sheets;if(s.notes)S.notes=s.notes;S.cur=Math.min(s.cur,s.sheets.length-1);S.unit=s.unit;S.tb=s.tb||S.tb;
   Object.entries(s.k).forEach(([i,v])=>{if(S.scenes[i]){S.scenes[i].k=v[0];S.scenes[i].mmPerPx=v[1];}});sel=null;draft=null;renderAll();}
 function undo(){if(editing)cancelEdit();if(hpos<=0)return;hpos--;restore(hist[hpos]);}
@@ -1906,12 +1914,46 @@ function addImages(files){[...files].forEach(f=>{const r=new FileReader();r.onlo
   S.scenes[id]={id,name:f.name.replace(/\.[^.]+$/,''),index:900+Object.keys(S.scenes).length,pixelW:im.naturalWidth,pixelH:im.naturalHeight,mmPerPx:null,k:1,data:r.result,hash:hash(r.result),url:dataToUrl(r.result),changed:false};
   libOpen=true;renderAll();};im.src=r.result;};r.readAsDataURL(f);});}
 $('fImg').onchange=e=>addImages(e.target.files);
-function saveProject(){
-  if(editing)commitEdit();
-  const o={format:'navro-dok-project',version:4,printMarks:!!S.printMarks,grid:S.grid||null,instNames:S.instNames||{},unit:S.unit,model:S.model,lastFile:S.lastFile,tb:S.tb,notes:S.notes,media:Object.fromEntries(Object.entries(S.media).map(([k,m])=>[k,m.data])),sheets:S.sheets,
-    scenes:Object.values(S.scenes).map(s=>({id:s.id,name:s.name,index:s.index,pixelW:s.pixelW,pixelH:s.pixelH,perspective:s.perspective,mmPerPx:s.mmPerPx,k:s.k,userCal:s.userCal,camera:s.camera,fov:s.fov,snap:s.snap,image:s.data}))};
-  download(new Blob([JSON.stringify(o)],{type:'application/json'}),(S.model||'projekt')+'.navrodok');
-}
+/* ====================== ZAPIS, KOPIA ZAPASOWA, AUTOZAPIS ====================== */
+const NATIVE=window.navroNative||null; // wersja .exe (Electron) – prawdziwy zapis plików
+let DIRTY=false,FH=null,AUTOT=null;
+function markDirty(){DIRTY=true;titleSync();clearTimeout(AUTOT);AUTOT=setTimeout(autosave,20000);}
+function titleSync(){const n=(S.model||'Nowy projekt')+(DIRTY?' •':'');document.title=n+' – navro. dokumentacja';const el=$('projName');if(el)el.textContent=n;}
+function projectJson(){if(editing)commitEdit();
+  return JSON.stringify({format:'navro-dok-project',version:4,printMarks:!!S.printMarks,grid:S.grid||null,instNames:S.instNames||{},unit:S.unit,model:S.model,lastFile:S.lastFile,tb:S.tb,notes:S.notes,media:Object.fromEntries(Object.entries(S.media).map(([k,m])=>[k,m.data])),sheets:S.sheets,
+    scenes:Object.values(S.scenes).map(s=>({id:s.id,name:s.name,index:s.index,pixelW:s.pixelW,pixelH:s.pixelH,perspective:s.perspective,mmPerPx:s.mmPerPx,k:s.k,userCal:s.userCal,camera:s.camera,fov:s.fov,snap:s.snap,image:s.data}))});}
+function afterSaved(where,bak){DIRTY=false;titleSync();clearAutosave();toast('Zapisano'+(where?': '+where:'')+(bak?' · kopia zapasowa: '+bak:''));}
+async function saveProject(asNew){const data=projectJson(),name=(S.model||'projekt').replace(/[\\/:*?"<>|]/g,'_')+'.navrodok';
+  if(NATIVE){const r=await NATIVE.saveProject(data,asNew?null:(S.filePath||null),name);if(!r)return false;S.filePath=r.path;afterSaved(r.path,r.backup);return true;}
+  if(window.showSaveFilePicker){try{
+      if(!FH||asNew)FH=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Projekt navro. dokumentacja',accept:{'application/json':['.navrodok']}}]});
+      // kopia zapasowa poprzedniej wersji (w przeglądarce trzymana w pamięci programu)
+      try{const old=await (await FH.getFile()).text();if(old)await idbSet('backup',{t:Date.now(),name:FH.name,data:old});}catch(e){}
+      const w=await FH.createWritable();await w.write(data);await w.close();afterSaved(FH.name,'w pamięci programu');return true;}
+    catch(e){if(e&&e.name==='AbortError')return false;}}
+  download(new Blob([data],{type:'application/json'}),name);afterSaved();return true;}
+// autozapis: co 20 s po zmianie (oraz co 2 min) – na wypadek awarii, zamknięcia lub zawieszenia
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('navro-dok',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbSet(k,v){try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);});}catch(e){}}
+async function idbGet(k){try{const d=await idb();return await new Promise(res=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);});}catch(e){return null;}}
+async function autosave(){if(!DIRTY)return;const rec={t:Date.now(),model:S.model||'',path:S.filePath||null,data:projectJson()};
+  try{if(NATIVE)await NATIVE.autosave(JSON.stringify(rec));else await idbSet('autosave',rec);$('stTool').textContent='Autozapis '+new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});}catch(e){}}
+function clearAutosave(){try{if(NATIVE)NATIVE.clearAutosave();else idbSet('autosave',null);}catch(e){}}
+setInterval(autosave,120000);
+async function checkAutosave(){let rec=null;try{rec=NATIVE?JSON.parse(await NATIVE.readAutosave()||'null'):await idbGet('autosave');}catch(e){}
+  if(!rec||!rec.data)return;const d=new Date(rec.t);
+  choiceBox('Odzyskać niezapisany projekt?',`Program nie został poprawnie zamknięty albo projekt nie był zapisany.<br>Znaleziono autozapis <b>${esc(rec.model||'projektu')}</b> z ${d.toLocaleDateString('pl-PL')}, godz. ${d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}.`,
+    [['restore','Odzyskaj projekt','pri'],['drop','Odrzuć','ghost']],k=>{if(k==='restore'){loadProject(rec.data);S.filePath=rec.path||null;DIRTY=true;titleSync();toast('Projekt odzyskany z autozapisu – zapisz go (Ctrl+S)');}else clearAutosave();},'save');}
+/* ładne okno wyboru (zamiast systemowych komunikatów) */
+function choiceBox(title,html,btns,cb,icon){const m=$('cbox');m.querySelector('.ct').textContent=title;m.querySelector('.cx').innerHTML=html;m.querySelector('.ci').innerHTML=ico(icon||'save');
+  const f=m.querySelector('.cf');f.innerHTML=btns.map(([k,l,cl])=>`<button class="btn ${cl||'ghost'}" data-k="${k}">${l}</button>`).join('');m.style.display='flex';
+  const done=k=>{m.style.display='none';document.removeEventListener('keydown',kd,true);cb&&cb(k);};
+  const kd=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done('cancel');}else if(e.key==='Enter'){e.preventDefault();e.stopPropagation();done(btns[0][0]);}};
+  document.addEventListener('keydown',kd,true);f.querySelectorAll('button').forEach(b=>b.onclick=()=>done(b.dataset.k));setTimeout(()=>f.querySelector('button').focus(),30);}
+function askUnsaved(then){if(!DIRTY)return then();
+  choiceBox('Niezapisane zmiany',`Projekt <b>${esc(S.model||'bez nazwy')}</b> ma zmiany, które nie zostały zapisane.<br>Czy zapisać je przed kontynuowaniem?`,
+    [['save','Zapisz','pri'],['discard','Nie zapisuj','ghost'],['cancel','Anuluj','ghost']],async k=>{if(k==='save'){if(await saveProject())then();}else if(k==='discard'){DIRTY=false;clearAutosave();then();}});}
+if(NATIVE)NATIVE.onCloseRequest(()=>askUnsaved(()=>{clearAutosave();NATIVE.confirmClose();}));
 function migrateSheet(s){
   s.marks=s.marks||[];
   if(s.corner==='logo'&&!s.kind){s.kind='cover';}
@@ -1931,11 +1973,11 @@ function loadProject(text){
   S.sheets=j.sheets;S.sheets.forEach(migrateSheet);
   S.cur=0;S.unit=j.unit||'cm';S.model=j.model||'';S.lastFile=j.lastFile||null;S.tb=Object.assign(defaultTB(),j.tb||{});S.tb.lab=S.tb.lab||{};
   uid=1+Math.max(0,...S.sheets.flatMap(s=>s.items.map(i=>+String(i.id).slice(1)||0)),...S.sheets.map(s=>+String(s.id).slice(1)||0));
-  sel=null;hist=[];hpos=-1;renderAll();fitView();render();push();toast('Projekt otwarty');
+  sel=null;hist=[];hpos=-1;renderAll();fitView();render();push();DIRTY=false;titleSync();toast('Projekt otwarty');
 }
-$('bSaveP').onclick=saveProject;
-$('bOpenP').onclick=()=>{$('fProj').value='';$('fProj').click();};
-$('fProj').onchange=e=>{const f=e.target.files[0];if(f)readFile(f,loadProject);};
+$('bSaveP').onclick=()=>saveProject();
+$('bOpenP').onclick=()=>askUnsaved(()=>{$('fProj').value='';$('fProj').click();});
+$('fProj').onchange=e=>{const f=e.target.files[0];if(f){FH=null;S.filePath=NATIVE&&NATIVE.pathOf?NATIVE.pathOf(f):null;readFile(f,loadProject);}};
 $('bUndo').onclick=undo;$('bRedo').onclick=redo;
 
 /* ====================== EKSPORT ====================== */
@@ -2057,7 +2099,7 @@ $('gridBtn').onclick=()=>{gridSync();S.grid.on=!S.grid.on;gridSync();render();};
 $('gridBtn').oncontextmenu=e=>{e.preventDefault();gridSync();const r=e.target.getBoundingClientRect();
   showPop(r.left-60,r.top-150,`<div style="font-weight:600;margin-bottom:8px">Siatka pomocnicza</div><div class="r"><label>Oczko [mm]</label><input class="in" type="number" min="1" step="1" style="width:90px" value="${S.grid.step}"></div><div class="r"><label>Przyciągaj do siatki (1 = tak)</label><input class="in" style="width:90px" value="${S.grid.snap?1:0}"></div>`,vs=>{S.grid.step=Math.max(1,+vs[0]||10);S.grid.snap=vs[1].trim()!=='0';S.grid.on=true;gridSync();render();});};
 $('orthoBtn').onclick=e=>{orthoOn=!orthoOn;e.target.classList.toggle('on',orthoOn);};
-window.addEventListener('beforeunload',e=>{if(S.sheets.some(s=>s.items.length)){e.preventDefault();e.returnValue='';}});
+window.addEventListener('beforeunload',e=>{if(NATIVE)return;if(DIRTY){autosave();e.preventDefault();e.returnValue='';}});
 let dragDepth=0;
 window.addEventListener('dragenter',e=>{const ty=e.dataTransfer.types;if(ty.includes('Files')||(cur()&&cur().kind==='cover'&&(ty.includes('text/uri-list')||ty.includes('text/html')))){if(cur()&&cur().kind==='cover')$('drop').dataset.cover='1';else delete $('drop').dataset.cover;dragDepth++;$('drop').style.display='block';}});
 window.addEventListener('dragleave',e=>{if(dragDepth>0&&--dragDepth<=0){dragDepth=0;$('drop').style.display='none';}});
@@ -2099,7 +2141,7 @@ $('emptyIco').innerHTML=`<svg class="i" viewBox="0 0 24 24" style="width:40px;he
 buildTools();
 S.sheets.push(newSheet('Strona tytułowa','A3','L','cover'),newSheet('Spis treści','A3','L','toc'),newSheet('Arkusz 1'));S.cur=2;
 setTool('sel');renderAll();
-setTimeout(()=>{fitView();render();push();},0);
+setTimeout(()=>{fitView();render();push();DIRTY=false;titleSync();checkAutosave();},0);
 if(document.fonts)document.fonts.ready.then(()=>{INK={};render();renderSheets();});
 window.__navro={S,TS,loadNdok,loadProject,cur,render,dimGeom,exportDxf,fullSvg,renderAll,goSheet,startEdit,setTool};
 </script>
