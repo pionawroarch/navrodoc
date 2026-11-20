@@ -6,15 +6,9 @@ const os = require('os');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
 
-// kod komputera do licencji: identyfikator instalacji Windows (MachineGuid), w razie braku – dane sprzętu
+// kod komputera do licencji: nazwa komputera (wielkie litery, bez myślników i spacji)
 function machineCode() {
-  let src = '';
-  try { const out = execSync('reg query HKLM\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid', { encoding: 'utf8', windowsHide: true }); const m = out.match(/MachineGuid\s+REG_SZ\s+(\S+)/); if (m) src = m[1]; } catch (e) {}
-  if (!src) src = [os.hostname(), (os.cpus()[0] || {}).model, os.totalmem(), os.platform()].join('|');
-  const h = crypto.createHash('sha256').update('navro-dok|' + src.toLowerCase()).digest().subarray(0, 10);
-  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; let bits = 0, v = 0, o = '';
-  for (const x of h) { v = (v << 8) | x; bits += 8; while (bits >= 5) { o += A[(v >>> (bits - 5)) & 31]; bits -= 5; } }
-  return o.match(/.{1,4}/g).join('-');
+  return String(process.env.COMPUTERNAME || os.hostname() || 'KOMPUTER').toUpperCase().replace(/[^A-Z0-9]/g, '') || 'KOMPUTER';
 }
 
 app.setName('navro. dokumentacja');

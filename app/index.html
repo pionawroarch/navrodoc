@@ -333,7 +333,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke
 <div id="modal"><div class="box"><div class="mh" id="mTitle"></div><div class="mb" id="mBody"></div>
   <div class="mf"><button class="btn ghost" id="mCancel">Anuluj</button><button class="btn pri" id="mOk">OK</button></div></div></div>
 <div id="lic"><div class="lbox"><div class="lmark">n.</div><div class="lt">Aktywacja programu</div><div class="ls">navro. dokumentacja</div>
-<div class="lx">Ten program wymaga licencji. Wyślij poniższy <b>kod komputera</b> do NAVRO. – otrzymasz nazwę i klucz licencji.</div>
+<div class="lx">Ten program wymaga licencji. Wyślij poniższy <b>kod komputera</b> (nazwę komputera) do NAVRO. – otrzymasz nazwę i klucz licencji.</div>
 <div class="lcode"><span id="licCode">…</span><button class="btn ghost" id="licCopy">Kopiuj</button></div>
 <label>Nazwa licencji</label><input class="in" id="licName" placeholder="np. Jan Kowalski" autocomplete="off">
 <label>Klucz licencji</label><textarea class="in" id="licKey" rows="3" placeholder="XXXXXX-XXXXXX-…" spellcheck="false"></textarea>
@@ -2175,7 +2175,8 @@ const LIC_EPOCH=Date.UTC(2025,0,1);
 let LIC=null,LIC_LOCK=false;
 async function machineCode(){if(NATIVE&&NATIVE.machineCode){try{const c=await NATIVE.machineCode();if(c)return c;}catch(e){}}
   let c=null;try{c=localStorage.getItem('navro-mc');}catch(e){}if(!c)c=(await idbGet('mc'))||null;
-  if(!c){c=grp(b32enc(crypto.getRandomValues(new Uint8Array(10))),4);}
+  if(c)c=c.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!c){c='WWW'+b32enc(crypto.getRandomValues(new Uint8Array(6))).replace(/[^A-Z0-9]/g,'');} // przeglądarka nie zna nazwy komputera
   try{localStorage.setItem('navro-mc',c);}catch(e){}idbSet('mc',c);return c;}
 async function verifyLicense(code,name,key){const by=b32dec(key||'');if(by.length!==67||by[0]!==1)return {ok:false,msg:'Nieprawidłowy klucz (zła długość lub format)'};
   const days=(by[1]<<8)|by[2],exp=days?new Date(LIC_EPOCH+days*864e5).toISOString().slice(0,10):'0';
