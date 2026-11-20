@@ -1236,7 +1236,7 @@ function renderAll(){syncToc();if($('paneK').style.display!=='none')renderMarks(
 
 /* ====================== NARZĘDZIA + PASEK OPCJI NAD NARZĘDZIEM ====================== */
 const TOOLS=['#GŁÓWNE',['sel','V','Zaznaczanie i przesuwanie'],['brush','I','Pipeta i nadawanie stylu (Alt+klik – pobierz nowy styl)'],['eraser','E','Gumka – kliknij lub przeciągnij po elementach'],'#DOKUM.',['dim','D','Wymiar'],['dimc','W','Wymiarowanie ciągiem'],['txt','T','Tekst'],['lead','L','Opis z odnośnikiem (etykieta)'],['cal','C','Kalibracja skali'],'#INSTAL.',['inst','G','Instalacje – symbole elektryczne i hydrauliczne (legenda dodaje się sama)'],'#RYSUNEK',['line','N','Linia'],['pl','P','Polilinia'],['fill','B','Wypełnienie / kształt (dowolny, prostokąt, okrąg)'],'#KOREKTY',['mnote','K','Korekta: komentarz (pinezka)'],['mcloud','O','Korekta: chmurka wokół obszaru'],['mpen','M','Korekta: pisak odręczny']];
-const HINTS={ipl:'<b>Instalacja liniowa</b> – klikaj kolejne punkty · Enter lub dwuklik kończy · Esc anuluje',inst:'<b>Instalacje</b> – wybierz symbol u góry i klikaj na rysunku · R obraca · symbole liniowe: klikaj punkty, Enter kończy',dim:'<b>Wymiar</b> – kliknij pierwszy punkt',dim1:'<b>Wymiar</b> – kliknij drugi punkt',dim2:'<b>Wymiar</b> – wskaż położenie linii wymiarowej',
+const HINTS={dim:'<b>Wymiar</b> – kliknij pierwszy punkt',dim1:'<b>Wymiar</b> – kliknij drugi punkt',dim2:'<b>Wymiar</b> – wskaż położenie linii wymiarowej',
   chain:'<b>Wymiar ciągły</b> – klikaj kolejne punkty · Enter / prawy przycisk kończy',dimc:'<b>Wymiar ciągły</b> – kliknij pierwszy punkt',
   txt:'<b>Tekst</b> – kliknij miejsce albo przeciągnij, aby narysować pole tekstu',tbox:'<b>Pole tekstu</b> – puść przycisk, aby zakończyć',mnote:'<b>Komentarz</b> – kliknij miejsce, którego dotyczy uwaga',mcloud:'<b>Chmurka</b> – przeciągnij wokół obszaru do poprawy',mpen:'<b>Pisak</b> – rysuj odręcznie, puść przycisk aby zakończyć',eraser:'<b>Gumka</b> – kliknij element lub przeciągnij po elementach (widoki pomijane)',lead:'<b>Etykieta</b> – kliknij miejsce grotu (strzałki)',lead1:'<b>Etykieta</b> – klikaj punkty załamania · dwuklik lub Enter – miejsce tekstu (Shift – kąty proste)',
   line:'<b>Linia</b> – pierwszy punkt',line1:'<b>Linia</b> – drugi punkt (Shift – kąty proste)',
@@ -1255,7 +1255,7 @@ function renderTopts(){
   const el=$('topts'),k=hintKey(),hn=HINTS[k]||'';
   $('stTool').innerHTML='';
   if(tool==='sel'){el.style.display='none';return;}
-  let h=`<span class="hint2">${hn}</span>`;
+  let h=hn?`<span class="hint2">${hn}</span>`:'';
   const penOpts=v=>`<select data-tset="pen">`+PENS.map(x=>`<option value="${x}" ${Math.abs(x-v)<1e-6?'selected':''}>${x.toFixed(2)}</option>`).join('')+`</select>`;
   if(tool==='dim'||tool==='dimc')h+=`<span class="vs"></span><label>Kierunek</label>`+segm('dimDir',[['auto','Auto'],['h','Poziomy'],['v','Pionowy'],['a','Równoległy']],TS.dimDir)+`<label>Tekst</label><input class="in" type="number" step="0.25" style="width:62px" data-tnum="dimSize" value="${TS.dimSize}"><label>mm</label>`;
   if(tool==='txt')h+=`<span class="vs"></span><select data-ttxt="font">`+FAMILIES.map(f=>`<option ${f===TS.txt.font?'selected':''}>${f}</option>`).join('')+`</select><input class="in" type="number" step="0.25" style="width:62px" data-ttxt="size" value="${TS.txt.size}"><label>mm</label>`+swb('txt',TS.txt.color);
