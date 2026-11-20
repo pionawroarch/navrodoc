@@ -29,6 +29,29 @@ function openFile(p) {
   win.focus();
 }
 
+
+// ---- wtyczka SketchUp: instalacja/aktualizacja przy uruchomieniu (także dla wersji przenośnej i SketchUpa zainstalowanego później) ----
+function pluginSource() { const a = path.join(process.resourcesPath || '', 'sketchup'), b = path.join(__dirname, 'wtyczka-sketchup'); return fs.existsSync(path.join(a, 'navro_dokumentacja.rb')) ? a : b; }
+const rbVersion = f => { try { const m = fs.readFileSync(f, 'utf8').match(/VERSION\s*=\s*'([^']+)'/); return m ? m[1] : null; } catch (e) { return null; } };
+function syncSketchupPlugin() {
+  try {
+    const src = pluginSource(), ver = rbVersion(path.join(src, 'navro_dokumentacja', 'main.rb')); if (!ver) return [];
+    const root = path.join(app.getPath('appData'), 'SketchUp'); if (!fs.existsSync(root)) return [];
+    const done = [];
+    for (const d of fs.readdirSync(root)) {
+      if (!/^SketchUp \d{4}$/.test(d)) continue;
+      const base = path.join(root, d, 'SketchUp'); if (!fs.existsSync(base)) continue;
+      const plug = path.join(base, 'Plugins');
+      if (rbVersion(path.join(plug, 'navro_dokumentacja', 'main.rb')) === ver) continue;
+      fs.mkdirSync(plug, { recursive: true });
+      fs.copyFileSync(path.join(src, 'navro_dokumentacja.rb'), path.join(plug, 'navro_dokumentacja.rb'));
+      fs.cpSync(path.join(src, 'navro_dokumentacja'), path.join(plug, 'navro_dokumentacja'), { recursive: true, force: true });
+      done.push(d);
+    }
+    return done;
+  } catch (e) { return []; }
+}
+
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', (e, argv) => { openFile(fileArg(argv)); if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
@@ -44,7 +67,9 @@ else {
     });
     win.once('ready-to-show', () => { win.maximize(); win.show(); });
     win.loadFile(path.join(__dirname, 'app', 'index.html'));
-    win.webContents.on('did-finish-load', () => { const a = fileArg(process.argv); if (a) pending.push(a); pending.splice(0).forEach(openFile); });
+    win.webContents.on('did-finish-load', () => {
+      const inst = syncSketchupPlugin();
+      if (inst.length) win.webContents.executeJavaScript(`setTimeout(()=>toast(${JSON.stringify('Wtyczka SketchUp zainstalowana/zaktualizowana: ' + inst.join(', ') + ' – uruchom ponownie SketchUpa')},3000)`).catch(() => {}); const a = fileArg(process.argv); if (a) pending.push(a); pending.splice(0).forEach(openFile); });
 
     // zamykanie: program pokazuje własne okno „Niezapisane zmiany” (Zapisz / Nie zapisuj / Anuluj)
     let allowClose = false;
