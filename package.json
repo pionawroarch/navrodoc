@@ -1,0 +1,42 @@
+{
+  "name": "navro-dokumentacja",
+  "productName": "navro. dokumentacja",
+  "version": "1.0.0",
+  "description": "navro. dokumentacja – arkusze dokumentacji ze scen SketchUpa",
+  "author": "NAVRO. – Studio Projektowe mgr inż. arch. Piotr Nawrocki",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "eu.navro.dokumentacja",
+    "productName": "navro. dokumentacja",
+    "copyright": "© NAVRO. Studio Projektowe",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "app/**/*", "build/icon.png"],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": ["nsis", "portable"],
+      "artifactName": "navro-dokumentacja-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "navro. dokumentacja",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "createDesktopShortcut": true
+    },
+    "portable": { "artifactName": "navro-dokumentacja-${version}-portable.exe" },
+    "fileAssociations": [
+      { "ext": "navrodok", "name": "Projekt navro. dokumentacja", "icon": "build/icon.ico" },
+      { "ext": "ndok", "name": "Sceny ze SketchUpa (navro.)", "icon": "build/icon.ico" },
+      { "ext": "navrokor", "name": "Korekty navro. dokumentacja", "icon": "build/icon.ico" }
+    ]
+  }
+}
