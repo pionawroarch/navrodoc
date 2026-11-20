@@ -5,7 +5,7 @@ require 'fileutils'
 
 module Navro
   module Dokumentacja
-    VERSION  = '0.3.0'
+    VERSION  = '0.3.1'
     FORMAT   = 'navro-dok'
     DIR      = File.dirname(__FILE__)
     ICONS    = File.join(DIR, 'icons')
@@ -335,6 +335,33 @@ module Navro
         top_planes << pl if pl
       end
 
+      # wszystkie aktywne przekroje w modelu (także te wewnątrz grup i komponentów) – trafienia promienia
+      # w geometrię odciętą którymkolwiek z nich nie zasłaniają linii (wcześniej liczył się tylko przekrój główny,
+      # przez co linie wewnątrz modelu znikały, a zostawały same punkty przekroju)
+      all_planes = top_planes.dup
+      if cuts_on
+        gather = nil
+        seen_def = {}
+        gather = lambda do |ents, tr, depth|
+          return if depth > 12
+          if !ents.equal?(model.entities) && ents.respond_to?(:active_section_plane) && ents.active_section_plane
+            pl = world_plane(ents.active_section_plane, tr, dir)
+            all_planes << pl if pl
+          end
+          ents.each do |e|
+            if e.is_a?(Sketchup::Group)
+              gather.call(e.entities, tr * e.transformation, depth + 1)
+            elsif e.is_a?(Sketchup::ComponentInstance)
+              d = e.definition
+              next if seen_def[[d.entityID, tr.to_a.map { |v| v.round(3) }]]
+              seen_def[[d.entityID, tr.to_a.map { |v| v.round(3) }]] = true
+              gather.call(d.entities, tr * e.transformation, depth + 1) if d.entities.any? { |x| x.is_a?(Sketchup::SectionPlane) || x.is_a?(Sketchup::Group) || x.is_a?(Sketchup::ComponentInstance) }
+            end
+          end
+        end
+        gather.call(model.entities, Geom::Transformation.new, 0)
+      end
+
       segs = []
       verts = []
       secs = []
@@ -355,7 +382,7 @@ module Navro
         dv = persp ? (eye - pt) : dir.reverse
         dist_eye = persp ? pt.distance(eye) : nil
         dv.normalize!
-        origin = pt.offset(dv, 0.04)
+        origin = pt.offset(dv, 0.08)
         res = true
         6.times do
           rays += 1
@@ -363,11 +390,11 @@ module Navro
           break unless hit
           hp = hit[0]
           break if persp && pt.distance(hp) >= dist_eye
-          if top_planes.all? { |pl| pval(pl, hp) >= -tol }
+          if all_planes.all? { |pl| pval(pl, hp) >= -tol }
             res = false
             break
           end
-          origin = hp.offset(dv, 0.04) # trafienie w część odciętą przekrojem – szukaj dalej
+          origin = hp.offset(dv, 0.08) # trafienie w część odciętą przekrojem – szukaj dalej
         end
         vis_cache[key] = res
         res

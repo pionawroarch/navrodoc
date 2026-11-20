@@ -6,7 +6,7 @@ module Navro
     unless file_loaded?(__FILE__)
       ex = SketchupExtension.new('navro. Dokumentacja', 'navro_dokumentacja/main')
       ex.description = 'Eksport scen SketchUpa do programu navro. Dokumentacja (arkusze, widoki w skali, wymiary).'
-      ex.version     = '0.3.0'
+      ex.version     = '0.3.1'
       ex.creator     = 'navro.'
       ex.copyright   = 'navro.'
       Sketchup.register_extension(ex, true)
