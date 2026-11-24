@@ -32,6 +32,7 @@ function openFile(p) {
 
 // ---- wtyczka SketchUp: instalacja/aktualizacja przy uruchomieniu (także dla wersji przenośnej i SketchUpa zainstalowanego później) ----
 function pluginSource() { const a = path.join(process.resourcesPath || '', 'sketchup'), b = path.join(__dirname, 'wtyczka-sketchup'); return fs.existsSync(path.join(a, 'navro_dokumentacja.rb')) ? a : b; }
+const cmpVer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0); } return 0; };
 const rbVersion = f => { try { const m = fs.readFileSync(f, 'utf8').match(/VERSION\s*=\s*'([^']+)'/); return m ? m[1] : null; } catch (e) { return null; } };
 function syncSketchupPlugin() {
   try {
@@ -42,7 +43,8 @@ function syncSketchupPlugin() {
       if (!/^SketchUp \d{4}$/.test(d)) continue;
       const base = path.join(root, d, 'SketchUp'); if (!fs.existsSync(base)) continue;
       const plug = path.join(base, 'Plugins');
-      if (rbVersion(path.join(plug, 'navro_dokumentacja', 'main.rb')) === ver) continue;
+      const have = rbVersion(path.join(plug, 'navro_dokumentacja', 'main.rb'));
+      if (have && cmpVer(have, ver) >= 0) continue; // nie cofaj nowszej wtyczki
       fs.mkdirSync(plug, { recursive: true });
       fs.copyFileSync(path.join(src, 'navro_dokumentacja.rb'), path.join(plug, 'navro_dokumentacja.rb'));
       fs.cpSync(path.join(src, 'navro_dokumentacja'), path.join(plug, 'navro_dokumentacja'), { recursive: true, force: true });
